@@ -1,10 +1,13 @@
 package tarea1.vista;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
+import tarea1.datos.LeerCredenciales;
 import tarea1.datos.LeerDAT;
 import tarea1.datos.LeerXml;
+import tarea1.logica.Parada;
 import tarea1.logica.Peregrino;
 import tarea1.utils.ComprobacionArgumentos;
 
@@ -24,6 +27,7 @@ public class Menu {
 		while (res != 3) {
 			if (res == 1) {
 				this.registrar();
+				this.login();
 			}
 			if (res == 2) {
 				this.login();
@@ -39,6 +43,15 @@ public class Menu {
 		String usuario = " ";
 		String contraseña = " ";
 		String nacionalidad = " ";
+		int idParadaActual = 0;
+		String respuesta = " ";
+		ArrayList<Parada> listaParadas = new ArrayList<Parada>();
+		ArrayList<Peregrino> listaPeregrinos = new ArrayList<Peregrino>();
+		try {
+			listaParadas = LeerDAT.obtenerParadas();
+		} catch (IOException e) {
+			System.out.println(e.getMessage());
+		}
 
 		do {
 			try {
@@ -50,15 +63,6 @@ public class Menu {
 				ComprobacionArgumentos.esVacio(usuario);
 				ComprobacionArgumentos.esInvalido(usuario);
 
-				aux = false;
-			} catch (IllegalArgumentException e) {
-				System.out.println(e.getMessage());
-				aux = true;
-			}
-		} while (aux == true);
-
-		do {
-			try {
 				System.out.print("Contraseña: ");
 
 				contraseña = teclado.nextLine();
@@ -68,17 +72,6 @@ public class Menu {
 				ComprobacionArgumentos.esInvalido(contraseña);
 				ComprobacionArgumentos.comprueba(contraseña.length() > 16, "contraseña demasiado larga");
 
-				aux = false;
-			} catch (IllegalArgumentException e) {
-				System.out.println(e.getMessage());
-				aux = true;
-			}
-		} while (aux == true);
-
-		// añadir al peregrino nacionalidad
-
-		do {
-			try {
 				System.out.print("Nacionalidad: ");
 
 				nacionalidad = teclado.nextLine();
@@ -88,6 +81,29 @@ public class Menu {
 				ComprobacionArgumentos.esInvalido(nacionalidad);
 				ComprobacionArgumentos.comprueba(!LeerXml.obtenerPaises().contains(nacionalidad),
 						"La nacionalidad no concuerda con ninguna nacionalidad de la lista");
+				// asociar parada a peregrino(pregunta al usuario la parada (id) y asociarsela)
+				System.out.print("Dime la id de la parada desde la que te registras: ");
+
+				idParadaActual = teclado.nextInt();
+
+				// Comprabar que no sea null(validacion) "en este caso no hace falta validar"
+				// Comprobar que idparadaactual este dentro de las id´s de paradas.dat
+				// (verificacion)
+
+				ComprobacionArgumentos.comprueba(!listaParadas.contains(new Parada(idParadaActual)),
+						"Error: la id que has pasado, no existe");
+
+				System.out.print("Los datos introducidos son correctos? (S/N)");
+				teclado.nextLine();
+				respuesta = teclado.nextLine();
+
+				ComprobacionArgumentos.esNulo(respuesta);
+				ComprobacionArgumentos.esVacio(respuesta);
+				ComprobacionArgumentos.esInvalido(respuesta);
+				ComprobacionArgumentos.comprueba(respuesta.length() > 1,
+						"Error: respuesta damasiado larga, usa S para si y N para no");
+				ComprobacionArgumentos.comprueba(!respuesta.equals("S"),
+						"Vuelve a introducir todos los datos de nuevo");
 
 				aux = false;
 			} catch (Exception e) {
@@ -96,18 +112,47 @@ public class Menu {
 			}
 		} while (aux == true);
 
-		// asociar parada a peregrino(pregunta al usuario la parada (id) y asociarsela)
-		try {
-			LeerDAT.obtenerParadas();
-		} catch (IOException e) {
-			System.out.println(e.getMessage());
-		}
-		;
-		// asociar contraseña a peregrino
+		// asociar campos a peregrino
+
+		// Peregrino peregrino = new Peregrino();
+
+		// Comparar los datos asociados al nuevo peregrino con el fichero
+		// credenciales.txt
+		// en caso de existir syso:Error. usuario ya existente. en caso de no existir
+		// añadir al txt y logearlo automaticamente
+		
 	}
 
 	public void login() {
+		boolean aux = false;
+		ArrayList<Peregrino> listaCredenciales = new ArrayList<Peregrino>();
+		try {
+			listaCredenciales = LeerCredenciales.obtenerPeregrino();
+		} catch (IOException e) {
+			System.out.println(e.getMessage());
+		}
+		do {
+			try {
+				System.out.print("Nombre de usuario: ");
+				String usuario = teclado.nextLine();
+				System.out.println("Contraseña: ");
+				String contraseña = teclado.nextLine();
 
+				if (listaCredenciales.contains(usuario) && listaCredenciales.contains(contraseña)) {
+					System.out.println("Credenciales correctas, bienvenido...");
+				} else
+					System.out.println("Credenciales incorrectas, intentelo de nuevo");
+
+				aux = false;
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+				aux = true;
+			}
+		} while (aux == true);
+		
+		System.out.println("1-Registrar nueva parada(ADMIN) 2-Exportar carnet XML(PEREGRINO) 3-Logout");
+		
+		
 	}
 
 	public void exportar() {

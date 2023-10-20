@@ -21,4 +21,6 @@ public class ComprobacionArgumentos {
 		if (arg)
 			throw new IllegalArgumentException(msg);
 	}
+	
+
 }
