@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import tarea1.datos.CrearCredenciales;
 import tarea1.datos.LeerCredenciales;
 import tarea1.datos.LeerDAT;
 import tarea1.datos.LeerXml;
@@ -47,6 +48,8 @@ public class Menu {
 		String respuesta = " ";
 		ArrayList<Parada> listaParadas = new ArrayList<Parada>();
 		ArrayList<Peregrino> listaPeregrinos = new ArrayList<Peregrino>();
+		ArrayList<Peregrino> listaCredenciales = new ArrayList<Peregrino>();
+		long idMayor = Long.MIN_VALUE;
 		try {
 			listaParadas = LeerDAT.obtenerParadas();
 		} catch (IOException e) {
@@ -102,7 +105,7 @@ public class Menu {
 				ComprobacionArgumentos.esInvalido(respuesta);
 				ComprobacionArgumentos.comprueba(respuesta.length() > 1,
 						"Error: respuesta damasiado larga, usa S para si y N para no");
-				ComprobacionArgumentos.comprueba(!respuesta.equals("S"),
+				ComprobacionArgumentos.comprueba(!respuesta.equals("S") && !respuesta.equals("s"),
 						"Vuelve a introducir todos los datos de nuevo");
 
 				aux = false;
@@ -112,20 +115,41 @@ public class Menu {
 			}
 		} while (aux == true);
 
-		// asociar campos a peregrino
-
-		// Peregrino peregrino = new Peregrino();
-
 		// Comparar los datos asociados al nuevo peregrino con el fichero
 		// credenciales.txt
 		// en caso de existir syso:Error. usuario ya existente. en caso de no existir
 		// añadir al txt y logearlo automaticamente
-		
+
+		System.out.println("Comparando campos con ficheros...");
+		try {
+			listaCredenciales = LeerCredenciales.obtenerPeregrino();
+			ComprobacionArgumentos.comprueba(listaCredenciales.contains(new Peregrino(usuario)),
+					"Error: Usuario en uso, repite el proceso utilizando otro nombre distinto");
+
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+
+		}
+
+		System.out.println("Campos correctos y libres, iniciando sesion...");
+
+		// asociar campos a peregrino
+		for (Peregrino a : listaCredenciales) {
+			if (a.getId() > idMayor)
+				idMayor = a.getId();
+
+		}
+		try {
+			CrearCredenciales.añadirCredenciales(usuario, contraseña, "peregrino", idMayor + 1);
+		} catch (IOException e) {
+			System.out.println(e.getMessage());
+		}
 	}
 
 	public void login() {
 		boolean aux = false;
 		ArrayList<Peregrino> listaCredenciales = new ArrayList<Peregrino>();
+		System.out.println("Vamos a logearnos");
 		try {
 			listaCredenciales = LeerCredenciales.obtenerPeregrino();
 		} catch (IOException e) {
@@ -149,10 +173,9 @@ public class Menu {
 				aux = true;
 			}
 		} while (aux == true);
-		
+
 		System.out.println("1-Registrar nueva parada(ADMIN) 2-Exportar carnet XML(PEREGRINO) 3-Logout");
-		
-		
+
 	}
 
 	public void exportar() {

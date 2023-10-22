@@ -23,11 +23,11 @@ public class LeerCredenciales {
 		while ((line = br.readLine()) != null) {
 			// 3º paso: obtener los elementos de la parada de cada linea
 			String[] aux = line.split(",");
-			Long id = Long.parseLong(aux[0]);
-			String nombre = aux[1];
-			String nacionalidad = aux[2];
+			long id = Long.parseLong(aux[3]);
+			String nombre = aux[0];
+			
 
-			Peregrino peregrino = new Peregrino(id,nombre,nacionalidad);
+			Peregrino peregrino = new Peregrino(id,nombre);
 			// 4º paso: guardar las paradas al arrayList y devolverlo
 			credenciales.add(peregrino);
 

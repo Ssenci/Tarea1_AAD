@@ -1,0 +1,4 @@
+Jorge,admingeneral,admingeneral,0
+Jose,admin,parada,1
+Alejandro,peregrino,peregrino,3
+Pepe,espain,peregrino,4
