@@ -23,7 +23,7 @@ public class LeerDAT {
 			String[] aux = line.split(",");
 			Long id = Long.parseLong(aux[0]);
 			String nombre = aux[1];
-			char region = aux[2].charAt(0);
+			String region = aux[2];
 
 			Parada parada = new Parada(id, nombre, region);
 			// 4º paso: guardar las paradas al arrayList y devolverlo

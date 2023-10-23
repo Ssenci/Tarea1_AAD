@@ -1,6 +1,7 @@
 package tarea1.vista;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -8,6 +9,8 @@ import tarea1.datos.CrearCredenciales;
 import tarea1.datos.LeerCredenciales;
 import tarea1.datos.LeerDAT;
 import tarea1.datos.LeerXml;
+import tarea1.datos.LogearActual;
+import tarea1.datos.ObtenerUsuario;
 import tarea1.logica.Parada;
 import tarea1.logica.Peregrino;
 import tarea1.utils.ComprobacionArgumentos;
@@ -15,9 +18,11 @@ import tarea1.utils.ComprobacionArgumentos;
 public class Menu {
 
 	private Scanner teclado;
+	private Peregrino usuarioLogeado;
 
 	public Menu() {
 		teclado = new Scanner(System.in);
+
 	}
 
 	public void run() {
@@ -28,13 +33,15 @@ public class Menu {
 		while (res != 3) {
 			if (res == 1) {
 				this.registrar();
-				this.login();
+
 			}
 			if (res == 2) {
 				this.login();
 			}
 
+			System.out.println("1-Registrarse como peregrino 2-Login 3-Salir");
 			res = teclado.nextInt();
+			teclado.nextLine();
 		}
 	}
 
@@ -50,6 +57,7 @@ public class Menu {
 		ArrayList<Peregrino> listaPeregrinos = new ArrayList<Peregrino>();
 		ArrayList<Peregrino> listaCredenciales = new ArrayList<Peregrino>();
 		long idMayor = Long.MIN_VALUE;
+
 		try {
 			listaParadas = LeerDAT.obtenerParadas();
 		} catch (IOException e) {
@@ -128,6 +136,7 @@ public class Menu {
 
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
+			return;
 
 		}
 
@@ -140,41 +149,213 @@ public class Menu {
 
 		}
 		try {
-			CrearCredenciales.añadirCredenciales(usuario, contraseña, "peregrino", idMayor + 1);
+			CrearCredenciales.añadirCredenciales(usuario, contraseña, "peregrino", idMayor + 1, nacionalidad,
+					idParadaActual);
 		} catch (IOException e) {
 			System.out.println(e.getMessage());
 		}
+
+		this.login(usuario, contraseña);
 	}
 
 	public void login() {
-		boolean aux = false;
-		ArrayList<Peregrino> listaCredenciales = new ArrayList<Peregrino>();
-		System.out.println("Vamos a logearnos");
-		try {
-			listaCredenciales = LeerCredenciales.obtenerPeregrino();
-		} catch (IOException e) {
-			System.out.println(e.getMessage());
+		System.out.print("Introduce nombre: ");
+		String nombre = teclado.nextLine();
+		System.out.print("Introduce contraseña: ");
+		String contraseña = teclado.nextLine();
+		this.login(nombre, contraseña);
+	}
+
+	public void login(String usuario, String contraseña) {
+
+		usuarioLogeado = LogearActual.logearActual(usuario, contraseña);
+		// menus de perfiles
+		if (usuarioLogeado.getPerfil().equals("peregrino")) {
+			this.menuPeregrino();
 		}
-		do {
-			try {
-				System.out.print("Nombre de usuario: ");
-				String usuario = teclado.nextLine();
-				System.out.println("Contraseña: ");
-				String contraseña = teclado.nextLine();
+		if (usuarioLogeado.getPerfil().equals("admingeneral")) {
+			this.menuAdminGeneral();
+		}
+		if (usuarioLogeado.getPerfil().equals("parada")) {
+			this.menuParada();
+		}
+	}
 
-				if (listaCredenciales.contains(usuario) && listaCredenciales.contains(contraseña)) {
-					System.out.println("Credenciales correctas, bienvenido...");
-				} else
-					System.out.println("Credenciales incorrectas, intentelo de nuevo");
+	public void menuPeregrino() {
+		ArrayList<String[]> listaPeregrino = new ArrayList<String[]>();
+		ArrayList<Parada> listaParadas = new ArrayList<Parada>();
+		String[] datos = new String[6];
+		String[] datosP = new String[3];
+		int res;
+		try {
+			listaPeregrino = ObtenerUsuario.obtenerUsuarios();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
-				aux = false;
-			} catch (Exception e) {
-				System.out.println(e.getMessage());
-				aux = true;
+		try {
+			listaParadas = LeerDAT.obtenerParadas();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		for (int i = 0; i < listaPeregrino.size(); i++) {
+			if (listaPeregrino.get(i)[0].equals(usuarioLogeado.getNombre())) {
+				datos[0] = listaPeregrino.get(i)[0];
+				datos[1] = listaPeregrino.get(i)[1];
+				datos[2] = listaPeregrino.get(i)[2];
+				datos[3] = listaPeregrino.get(i)[3];
+				datos[4] = listaPeregrino.get(i)[4];
+				datos[5] = listaPeregrino.get(i)[5];
 			}
-		} while (aux == true);
+		}
 
-		System.out.println("1-Registrar nueva parada(ADMIN) 2-Exportar carnet XML(PEREGRINO) 3-Logout");
+		for (int i = 0; i < listaParadas.size(); i++) {
+			if (datos[5].equals(listaParadas.get(i).getId())) {
+
+				datosP[1] = listaParadas.get(i).getNombre();
+				datosP[2] = listaParadas.get(i).getRegion();
+
+			}
+		}
+		// Obtener el valor de los atributos del peregrino que se acaba de registrar
+		System.out.println("Biendvenido al sistema, sus datos son los siguientes: ID: " + datos[3] + ", nombre: "
+				+ datos[0] + "" + ", nacionalidad: " + datos[4] + ", fecha de expedición : " + LocalDateTime.now()
+				+ ", nombre + región de la parada inicial: " + datosP[1] + " " + datosP[2]);
+
+		System.out.println("1-Exportar carnet en XML 2-Logout");
+		res = teclado.nextInt();
+		while (res != 3) {
+			if (res == 1) {
+				// exportar carnet en XML
+			}
+			if (res == 2) {
+				// logout
+				// logut establezco el usuario que esta conectado a null
+				usuarioLogeado = null;
+				this.run();
+
+			}
+
+		}
+
+	}
+
+	public void menuAdminGeneral() {
+		ArrayList<String[]> listaPeregrino = new ArrayList<String[]>();
+		ArrayList<Parada> listaParadas = new ArrayList<Parada>();
+		String[] datos = new String[6];
+		String[] datosP = new String[3];
+		int res;
+		try {
+			listaPeregrino = ObtenerUsuario.obtenerUsuarios();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		try {
+			listaParadas = LeerDAT.obtenerParadas();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		for (int i = 0; i < listaPeregrino.size(); i++) {
+			if (listaPeregrino.get(i)[0].equals(usuarioLogeado.getNombre())) {
+				datos[0] = listaPeregrino.get(i)[0];
+				datos[1] = listaPeregrino.get(i)[1];
+				datos[2] = listaPeregrino.get(i)[2];
+				datos[3] = listaPeregrino.get(i)[3];
+				datos[4] = listaPeregrino.get(i)[4];
+				datos[5] = listaPeregrino.get(i)[5];
+			}
+		}
+
+		for (int i = 0; i < listaParadas.size(); i++) {
+			if (datos[5].equals(listaParadas.get(i).getId())) {
+
+				datosP[1] = listaParadas.get(i).getNombre();
+				datosP[2] = listaParadas.get(i).getRegion();
+
+			}
+		}
+		// Obtener el valor de los atributos del peregrino que se acaba de registrar
+		System.out.println("Biendvenido al sistema, sus datos son los siguientes: ID: " + datos[3] + ", nombre: "
+				+ datos[0] + "" + ", nacionalidad: " + datos[4] + ", fecha de expedición : " + LocalDateTime.now()
+				+ ", nombre + región de la parada inicial: " + datosP[1] + " " + datosP[2]);
+
+		System.out.println("1-Registrar parada 2-Logout");
+		res = teclado.nextInt();
+		while (res != 3) {
+			if (res == 1) {
+				// registrar parada
+			}
+			if (res == 2) {
+				// logout
+				// logut establezco el usuario que esta conectado a null
+				usuarioLogeado = null;
+				this.run();
+			}
+
+		}
+
+	}
+
+	public void menuParada() {
+		ArrayList<String[]> listaPeregrino = new ArrayList<String[]>();
+		ArrayList<Parada> listaParadas = new ArrayList<Parada>();
+		String[] datos = new String[6];
+		String[] datosP = new String[3];
+		int res;
+		try {
+			listaPeregrino = ObtenerUsuario.obtenerUsuarios();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		try {
+			listaParadas = LeerDAT.obtenerParadas();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		for (int i = 0; i < listaPeregrino.size(); i++) {
+			if (listaPeregrino.get(i)[0].equals(usuarioLogeado.getNombre())) {
+				datos[0] = listaPeregrino.get(i)[0];
+				datos[1] = listaPeregrino.get(i)[1];
+				datos[2] = listaPeregrino.get(i)[2];
+				datos[3] = listaPeregrino.get(i)[3];
+				datos[4] = listaPeregrino.get(i)[4];
+				datos[5] = listaPeregrino.get(i)[5];
+			}
+		}
+
+		for (int i = 0; i < listaParadas.size(); i++) {
+			if (datos[5].equals(listaParadas.get(i).getId())) {
+
+				datosP[1] = listaParadas.get(i).getNombre();
+				datosP[2] = listaParadas.get(i).getRegion();
+
+			}
+		}
+		// Obtener el valor de los atributos del peregrino que se acaba de registrar
+		System.out.println("Biendvenido al sistema, sus datos son los siguientes: ID: " + datos[3] + ", nombre: "
+				+ datos[0] + "" + ", nacionalidad: " + datos[4] + ", fecha de expedición : " + LocalDateTime.now()
+				+ ", nombre + región de la parada inicial: " + datosP[1] + " " + datosP[2]);
+
+		System.out.println("1-Logout");
+		res = teclado.nextInt();
+		while (res != 2) {
+			if (res == 1) {
+				// logout
+				// logut establezco el usuario que esta conectado a null
+				usuarioLogeado = null;
+				this.run();
+			}
+
+		}
 
 	}
 

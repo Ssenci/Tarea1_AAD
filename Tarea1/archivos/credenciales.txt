@@ -1,4 +1,5 @@
-Jorge,admingeneral,admingeneral,0
-Jose,admin,parada,1
-Alejandro,peregrino,peregrino,3
-Pepe,espain,peregrino,4
+Jorge,admingeneral,admingeneral,0,Ecuador,1
+Jose,admin,parada,1,Korea,1
+Alejandro,peregrino,peregrino,2,Colombia,1
+Pepe,espain,peregrino,3,Portugal,1
+Diana,sol,peregrino,4,Vietnam,1

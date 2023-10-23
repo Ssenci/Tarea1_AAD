@@ -4,7 +4,7 @@ public class Parada {
 
 	private long id;
 	private String nombre;
-	private char region;
+	private String region;
 
 	public long getId() {
 		return id;
@@ -22,11 +22,11 @@ public class Parada {
 		this.nombre = nombre;
 	}
 
-	public char getRegion() {
+	public String getRegion() {
 		return region;
 	}
 
-	public void setRegion(char region) {
+	public void setRegion(String region) {
 		this.region = region;
 	}
 
@@ -35,7 +35,7 @@ public class Parada {
 		this.id = id;
 	}
 
-	public Parada(long id, String nombre, char region) {
+	public Parada(long id, String nombre, String region) {
 		super();
 		this.id = id;
 		this.nombre = nombre;

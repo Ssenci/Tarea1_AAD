@@ -25,7 +25,6 @@ public class LeerCredenciales {
 			String[] aux = line.split(",");
 			long id = Long.parseLong(aux[3]);
 			String nombre = aux[0];
-			
 
 			Peregrino peregrino = new Peregrino(id,nombre);
 			// 4º paso: guardar las paradas al arrayList y devolverlo
