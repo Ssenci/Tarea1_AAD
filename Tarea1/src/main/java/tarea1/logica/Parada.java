@@ -5,6 +5,7 @@ public class Parada {
 	private long id;
 	private String nombre;
 	private String region;
+	private String nombreUsuario;
 
 	public long getId() {
 		return id;
@@ -30,6 +31,14 @@ public class Parada {
 		this.region = region;
 	}
 
+	public String getNombreUsuario() {
+		return nombreUsuario;
+	}
+
+	public void setNombreUsuario(String nombreUsuario) {
+		this.nombreUsuario = nombreUsuario;
+	}
+
 	public Parada(long id) {
 		super();
 		this.id = id;
@@ -40,6 +49,14 @@ public class Parada {
 		this.id = id;
 		this.nombre = nombre;
 		this.region = region;
+	}
+
+	public Parada(long id, String nombre, String region, String nombreUsuario) {
+		super();
+		this.id = id;
+		this.nombre = nombre;
+		this.region = region;
+		this.nombreUsuario = nombreUsuario;
 	}
 
 	@Override
@@ -63,7 +80,5 @@ public class Parada {
 			return false;
 		return true;
 	}
-	
-	
 
 }

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import tarea1.datos.CrearCredenciales;
+import tarea1.datos.CrearDAT;
 import tarea1.datos.LeerCredenciales;
 import tarea1.datos.LeerDAT;
 import tarea1.datos.LeerXml;
@@ -159,10 +160,38 @@ public class Menu {
 	}
 
 	public void login() {
-		System.out.print("Introduce nombre: ");
-		String nombre = teclado.nextLine();
-		System.out.print("Introduce contraseña: ");
-		String contraseña = teclado.nextLine();
+		ArrayList<String[]> credenciales = new ArrayList<String[]>();
+		String[] datos = new String[6];
+		boolean aux = false;
+		String nombre = "";
+		String contraseña = "";
+		try {
+			credenciales = ObtenerUsuario.obtenerUsuarios();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		do {
+			System.out.print("Introduce nombre: ");
+			nombre = teclado.nextLine();
+			System.out.print("Introduce contraseña: ");
+			contraseña = teclado.nextLine();
+
+			try {
+				for (int i = 0; i < credenciales.size(); i++) {
+					if (credenciales.get(i)[0].equals(nombre)) {
+						ComprobacionArgumentos.comprueba(
+								!(credenciales.get(i)[0].equals(nombre) && credenciales.get(i)[1].equals(contraseña)),
+								"Error: Usuario o contraseña invalido");
+					}
+				}
+				aux = false;
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+				aux = true;
+
+			}
+		} while (aux == true);
 		this.login(nombre, contraseña);
 	}
 
@@ -170,14 +199,15 @@ public class Menu {
 
 		usuarioLogeado = LogearActual.logearActual(usuario, contraseña);
 		// menus de perfiles
-		if (usuarioLogeado.getPerfil().equals("peregrino")) {
+		if (usuarioLogeado != null && usuarioLogeado.getPerfil().equals("peregrino")) {
 			this.menuPeregrino();
-		}
-		if (usuarioLogeado.getPerfil().equals("admingeneral")) {
+		} else if (usuarioLogeado != null && usuarioLogeado.getPerfil().equals("admingeneral")) {
 			this.menuAdminGeneral();
-		}
-		if (usuarioLogeado.getPerfil().equals("parada")) {
+		} else if (usuarioLogeado != null && usuarioLogeado.getPerfil().equals("parada")) {
 			this.menuParada();
+		} else {
+			System.out.println("Error no existe usuario");
+			this.login();
 		}
 	}
 
@@ -196,7 +226,6 @@ public class Menu {
 		try {
 			listaParadas = LeerDAT.obtenerParadas();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -212,7 +241,7 @@ public class Menu {
 		}
 
 		for (int i = 0; i < listaParadas.size(); i++) {
-			if (datos[5].equals(listaParadas.get(i).getId())) {
+			if (Long.parseLong(datos[5]) == listaParadas.get(i).getId()) {
 
 				datosP[1] = listaParadas.get(i).getNombre();
 				datosP[2] = listaParadas.get(i).getRegion();
@@ -220,7 +249,7 @@ public class Menu {
 			}
 		}
 		// Obtener el valor de los atributos del peregrino que se acaba de registrar
-		System.out.println("Biendvenido al sistema, sus datos son los siguientes: ID: " + datos[3] + ", nombre: "
+		System.out.println("Bienvenido al sistema, sus datos son los siguientes: ID: " + datos[3] + ", nombre: "
 				+ datos[0] + "" + ", nacionalidad: " + datos[4] + ", fecha de expedición : " + LocalDateTime.now()
 				+ ", nombre + región de la parada inicial: " + datosP[1] + " " + datosP[2]);
 
@@ -273,7 +302,7 @@ public class Menu {
 		}
 
 		for (int i = 0; i < listaParadas.size(); i++) {
-			if (datos[5].equals(listaParadas.get(i).getId())) {
+			if (Long.parseLong(datos[5]) == listaParadas.get(i).getId()) {
 
 				datosP[1] = listaParadas.get(i).getNombre();
 				datosP[2] = listaParadas.get(i).getRegion();
@@ -281,15 +310,46 @@ public class Menu {
 			}
 		}
 		// Obtener el valor de los atributos del peregrino que se acaba de registrar
-		System.out.println("Biendvenido al sistema, sus datos son los siguientes: ID: " + datos[3] + ", nombre: "
+		System.out.println("Bienvenido al sistema, sus datos son los siguientes: ID: " + datos[3] + ", nombre: "
 				+ datos[0] + "" + ", nacionalidad: " + datos[4] + ", fecha de expedición : " + LocalDateTime.now()
 				+ ", nombre + región de la parada inicial: " + datosP[1] + " " + datosP[2]);
 
 		System.out.println("1-Registrar parada 2-Logout");
 		res = teclado.nextInt();
+		String nombreP;
+		String codigoP;
+		long idMayor = Long.MIN_VALUE;
 		while (res != 3) {
 			if (res == 1) {
 				// registrar parada
+				// su identificador propio, su nombre y código de región, y el nombre del
+				// usuario que es administrador/responsable de la misma
+				System.out.println("Dime nombre de la parada: ");
+				nombreP = teclado.nextLine();
+
+				ComprobacionArgumentos.esNulo(nombreP);
+				ComprobacionArgumentos.esVacio(nombreP);
+				ComprobacionArgumentos.esInvalido(nombreP);
+
+				System.out.println("Codigo de la region: ");
+				codigoP = teclado.nextLine();
+
+				ComprobacionArgumentos.esNulo(codigoP);
+				ComprobacionArgumentos.esVacio(codigoP);
+				ComprobacionArgumentos.esInvalido(codigoP);
+
+				for (Parada a : listaParadas) {
+					if (a.getId() > idMayor)
+						idMayor = a.getId();
+
+				}
+
+				try {
+					CrearDAT.añadirParada(idMayor + 1, nombreP, codigoP, usuarioLogeado.getNombre());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
 			}
 			if (res == 2) {
 				// logout
@@ -333,7 +393,7 @@ public class Menu {
 		}
 
 		for (int i = 0; i < listaParadas.size(); i++) {
-			if (datos[5].equals(listaParadas.get(i).getId())) {
+			if (Long.parseLong(datos[5]) == listaParadas.get(i).getId()) {
 
 				datosP[1] = listaParadas.get(i).getNombre();
 				datosP[2] = listaParadas.get(i).getRegion();
@@ -341,7 +401,7 @@ public class Menu {
 			}
 		}
 		// Obtener el valor de los atributos del peregrino que se acaba de registrar
-		System.out.println("Biendvenido al sistema, sus datos son los siguientes: ID: " + datos[3] + ", nombre: "
+		System.out.println("Bienvenido al sistema, sus datos son los siguientes: ID: " + datos[3] + ", nombre: "
 				+ datos[0] + "" + ", nacionalidad: " + datos[4] + ", fecha de expedición : " + LocalDateTime.now()
 				+ ", nombre + región de la parada inicial: " + datosP[1] + " " + datosP[2]);
 
