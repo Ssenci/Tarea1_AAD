@@ -2,7 +2,6 @@ package tarea1.datos;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 import tarea1.logica.Peregrino;
 

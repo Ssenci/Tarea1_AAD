@@ -8,10 +8,6 @@ import java.util.Scanner;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -68,7 +64,6 @@ public class Menu {
 		int idParadaActual = 0;
 		String respuesta = " ";
 		ArrayList<Parada> listaParadas = new ArrayList<Parada>();
-		ArrayList<Peregrino> listaPeregrinos = new ArrayList<Peregrino>();
 		ArrayList<Peregrino> listaCredenciales = new ArrayList<Peregrino>();
 		long idMayor = Long.MIN_VALUE;
 
@@ -83,7 +78,7 @@ public class Menu {
 				System.out.print("Nombre de usuario: ");
 
 				usuario = teclado.nextLine();
-
+				
 				ComprobacionArgumentos.esNulo(usuario);
 				ComprobacionArgumentos.esVacio(usuario);
 				ComprobacionArgumentos.esInvalido(usuario);
@@ -91,7 +86,7 @@ public class Menu {
 				System.out.print("Contraseña: ");
 
 				contraseña = teclado.nextLine();
-
+				
 				ComprobacionArgumentos.esNulo(contraseña);
 				ComprobacionArgumentos.esVacio(contraseña);
 				ComprobacionArgumentos.esInvalido(contraseña);
@@ -100,7 +95,7 @@ public class Menu {
 				System.out.print("Nacionalidad: ");
 
 				nacionalidad = teclado.nextLine();
-
+				
 				ComprobacionArgumentos.esNulo(nacionalidad);
 				ComprobacionArgumentos.esVacio(nacionalidad);
 				ComprobacionArgumentos.esInvalido(nacionalidad);
@@ -110,7 +105,7 @@ public class Menu {
 				System.out.print("Dime la id de la parada desde la que te registras: ");
 
 				idParadaActual = teclado.nextInt();
-
+				teclado.nextLine();
 				// Comprabar que no sea null(validacion) "en este caso no hace falta validar"
 				// Comprobar que idparadaactual este dentro de las id´s de paradas.dat
 				// (verificacion)
@@ -118,10 +113,10 @@ public class Menu {
 				ComprobacionArgumentos.comprueba(!listaParadas.contains(new Parada(idParadaActual)),
 						"Error: la id que has pasado, no existe");
 
-				System.out.print("Los datos introducidos son correctos? (S/N)");
-				teclado.nextLine();
-				respuesta = teclado.nextLine();
+				System.out.print("Los datos introducidos son correctos? (S/N) ");
 
+				respuesta = teclado.nextLine();
+				
 				ComprobacionArgumentos.esNulo(respuesta);
 				ComprobacionArgumentos.esVacio(respuesta);
 				ComprobacionArgumentos.esInvalido(respuesta);
@@ -267,6 +262,7 @@ public class Menu {
 
 		System.out.println("1-Exportar carnet en XML 2-Logout");
 		res = teclado.nextInt();
+		teclado.nextLine();
 		while (res != 3) {
 			if (res == 1) {
 				this.exportar(Long.parseLong(datos[3]), datos[0], datos[4], datosP[1], datosP[2]);
@@ -437,6 +433,7 @@ public class Menu {
 
 		System.out.println("1-Logout");
 		res = teclado.nextInt();
+		teclado.nextLine();
 		while (res != 2) {
 			if (res == 1) {
 				// logout
@@ -453,7 +450,7 @@ public class Menu {
 		ArrayList<Parada> listaParadas = new ArrayList<Parada>();
 		boolean aux = false;
 		LocalDateTime fechExp;
-		long kmRecorridos;
+		double kmRecorridos;
 		int numVips;
 		int orden;
 		LocalDate fechEstancia;
@@ -471,7 +468,8 @@ public class Menu {
 				fechExp = LocalDateTime.now();
 				// distancia total en km. recorrida (formato xx.x)
 				System.out.print("Dime numero de km recorridos con el siguiente formato (formato xx.x): ");
-				kmRecorridos = teclado.nextLong();
+				kmRecorridos = teclado.nextInt();
+				teclado.nextLine();
 				ComprobacionArgumentos.esInvalido(kmRecorridos + "");
 				ComprobacionArgumentos.esNulo(kmRecorridos);
 				ComprobacionArgumentos.esVacio(kmRecorridos + "");
@@ -503,6 +501,7 @@ public class Menu {
 
 				System.out.print("Dime la posición de la parada en tu ruta desde la parada inicial: ");
 				orden = teclado.nextInt();
+				teclado.nextLine();
 				ComprobacionArgumentos.esInvalido(orden + "");
 				ComprobacionArgumentos.esNulo(orden);
 				ComprobacionArgumentos.esVacio(orden + "");

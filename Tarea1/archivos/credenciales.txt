@@ -5,3 +5,4 @@ Pepe,espain,peregrino,3,Portugal,1
 Diana,sol,peregrino,4,Vietnam,1
 Marcos,zapato,peregrino,5,Colombia,1
 Alba,arbol,peregrino,6,Austria,1
+Angel,pato,peregrino,7,Brasil,2
