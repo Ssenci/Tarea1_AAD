@@ -1,12 +1,24 @@
 package tarea1.vista;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 import tarea1.datos.CrearCredenciales;
 import tarea1.datos.CrearDAT;
+import tarea1.datos.CrearXML;
 import tarea1.datos.LeerCredenciales;
 import tarea1.datos.LeerDAT;
 import tarea1.datos.LeerXml;
@@ -44,6 +56,7 @@ public class Menu {
 			res = teclado.nextInt();
 			teclado.nextLine();
 		}
+		System.exit(0);
 	}
 
 	public void registrar() {
@@ -161,7 +174,6 @@ public class Menu {
 
 	public void login() {
 		ArrayList<String[]> credenciales = new ArrayList<String[]>();
-		String[] datos = new String[6];
 		boolean aux = false;
 		String nombre = "";
 		String contraseña = "";
@@ -257,7 +269,7 @@ public class Menu {
 		res = teclado.nextInt();
 		while (res != 3) {
 			if (res == 1) {
-				// exportar carnet en XML
+				this.exportar(Long.parseLong(datos[3]), datos[0], datos[4], datosP[1], datosP[2]);
 			}
 			if (res == 2) {
 				// logout
@@ -286,7 +298,6 @@ public class Menu {
 		try {
 			listaParadas = LeerDAT.obtenerParadas();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -316,39 +327,59 @@ public class Menu {
 
 		System.out.println("1-Registrar parada 2-Logout");
 		res = teclado.nextInt();
+		teclado.nextLine();
 		String nombreP;
 		String codigoP;
 		long idMayor = Long.MIN_VALUE;
+		boolean aux = false;
 		while (res != 3) {
 			if (res == 1) {
 				// registrar parada
 				// su identificador propio, su nombre y código de región, y el nombre del
 				// usuario que es administrador/responsable de la misma
-				System.out.println("Dime nombre de la parada: ");
-				nombreP = teclado.nextLine();
+				do {
+					try {
 
-				ComprobacionArgumentos.esNulo(nombreP);
-				ComprobacionArgumentos.esVacio(nombreP);
-				ComprobacionArgumentos.esInvalido(nombreP);
+						System.out.println("Dime nombre de la parada: ");
+						nombreP = teclado.nextLine();
 
-				System.out.println("Codigo de la region: ");
-				codigoP = teclado.nextLine();
+						ComprobacionArgumentos.esNulo(nombreP);
+						ComprobacionArgumentos.esVacio(nombreP);
+						ComprobacionArgumentos.esInvalido(nombreP);
 
-				ComprobacionArgumentos.esNulo(codigoP);
-				ComprobacionArgumentos.esVacio(codigoP);
-				ComprobacionArgumentos.esInvalido(codigoP);
+						System.out.println("Codigo de la region: ");
+						codigoP = teclado.nextLine();
 
-				for (Parada a : listaParadas) {
-					if (a.getId() > idMayor)
-						idMayor = a.getId();
+						ComprobacionArgumentos.esNulo(codigoP);
+						ComprobacionArgumentos.esVacio(codigoP);
+						ComprobacionArgumentos.esInvalido(codigoP);
 
-				}
+						try {
+							listaParadas = LeerDAT.obtenerParadas();
+							ComprobacionArgumentos.comprueba(listaParadas.contains(new Parada(nombreP)),
+									"Error: Parada en uso, repite el proceso utilizando otro nombre distinto");
 
-				try {
-					CrearDAT.añadirParada(idMayor + 1, nombreP, codigoP, usuarioLogeado.getNombre());
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+						} catch (Exception e) {
+							System.out.println(e.getMessage());
+							return;
+						}
+						for (Parada a : listaParadas) {
+							if (a.getId() > idMayor)
+								idMayor = a.getId();
+
+						}
+
+						try {
+							CrearDAT.añadirParada(idMayor + 1, nombreP, codigoP, usuarioLogeado.getNombre());
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+						aux = false;
+					} catch (Exception e) {
+						System.out.println(e.getMessage());
+						aux = true;
+					}
+				} while (aux == true);
 
 			}
 			if (res == 2) {
@@ -377,7 +408,6 @@ public class Menu {
 		try {
 			listaParadas = LeerDAT.obtenerParadas();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -419,8 +449,119 @@ public class Menu {
 
 	}
 
-	public void exportar() {
+	public void exportar(long id, String nombre, String nacionalidad, String nombreP, String regionP) {
+		ArrayList<Parada> listaParadas = new ArrayList<Parada>();
+		boolean aux = false;
+		LocalDateTime fechExp;
+		long kmRecorridos;
+		int numVips;
+		int orden;
+		LocalDate fechEstancia;
+		try {
+			listaParadas = LeerDAT.obtenerParadas();
+		} catch (IOException ex) {
+			System.out.println(ex.getMessage());
+		}
+		do {
+			try {
+				// id peregrino
+				// nombre
+				// nacionalidad
+				// fech expedicion
+				fechExp = LocalDateTime.now();
+				// distancia total en km. recorrida (formato xx.x)
+				System.out.print("Dime numero de km recorridos con el siguiente formato (formato xx.x): ");
+				kmRecorridos = teclado.nextLong();
+				ComprobacionArgumentos.esInvalido(kmRecorridos + "");
+				ComprobacionArgumentos.esNulo(kmRecorridos);
+				ComprobacionArgumentos.esVacio(kmRecorridos + "");
+				ComprobacionArgumentos.comprueba(kmRecorridos < 0, "Distancia incorrecta");
 
+				// nº de estancias VIP realizadas en total
+				System.out.print("Dime numero de estancias VIP´s que has realizado en total: ");
+				numVips = teclado.nextInt();
+				teclado.nextLine();
+				ComprobacionArgumentos.esInvalido(numVips + "");
+				ComprobacionArgumentos.esNulo(numVips);
+				ComprobacionArgumentos.esVacio(numVips + "");
+				ComprobacionArgumentos.comprueba(numVips < 0, "Error: nº de estancias vips negativo");
+
+				// y la colección de paradas (nombre y región) de su ruta hasta el día actual
+				// indicando en qué fecha se realizó estancia en ellas
+				fechEstancia = LocalDate.now();
+				// VIP o NO
+				System.out.print("La estacia actual es VIP? (S/N): ");
+				String vip = teclado.nextLine();
+				ComprobacionArgumentos.esInvalido(vip + "");
+				ComprobacionArgumentos.esNulo(vip);
+				ComprobacionArgumentos.esVacio(vip + "");
+				ComprobacionArgumentos.comprueba(vip.length() > 1,
+						"Error: respuesta damasiado larga, usa S para si y N para no");
+				ComprobacionArgumentos.comprueba(
+						!vip.equals("S") && !vip.equals("s") && !vip.equals("N") && !vip.equals("n"),
+						"Vuelve a introducir todos los datos de nuevo");
+
+				System.out.print("Dime la posición de la parada en tu ruta desde la parada inicial: ");
+				orden = teclado.nextInt();
+				ComprobacionArgumentos.esInvalido(orden + "");
+				ComprobacionArgumentos.esNulo(orden);
+				ComprobacionArgumentos.esVacio(orden + "");
+				ComprobacionArgumentos.comprueba(orden < 0, "Error: nº de orden negativo");
+
+				try {
+					DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+					DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+					Document doc = docBuilder.newDocument();
+
+					// Elemento raiz: <carnet>
+					Element carnet = doc.createElement("carnet");
+					doc.appendChild(carnet);
+
+					// Elementos dentro de carnet
+
+					CrearXML.agregarElemento(doc, carnet, "id", id + "");
+					CrearXML.agregarElemento(doc, carnet, "fechaexp", fechExp + "");
+					CrearXML.agregarElemento(doc, carnet, "expedidoen", "paradaxxx");
+
+					// Elementos dentro de peregrino
+					Element peregrino = doc.createElement("peregrino");
+					carnet.appendChild(peregrino);
+					CrearXML.agregarElemento(doc, peregrino, "nombre", nombre);
+					CrearXML.agregarElemento(doc, peregrino, "nacionalidad", nacionalidad);
+
+					CrearXML.agregarElemento(doc, carnet, "hoy", fechEstancia + "");
+					CrearXML.agregarElemento(doc, carnet, "distanciatotal", kmRecorridos + "");
+
+					// Elemento paradas
+					Element paradas = doc.createElement("paradas");
+					carnet.appendChild(paradas);
+
+					// Agregar elementos dentro de "paradas"
+					for (int i = 1; i <= listaParadas.size(); i++) {
+						Element parada = doc.createElement("parada");
+
+						CrearXML.agregarElemento(doc, parada, "orden", orden + "");
+						CrearXML.agregarElemento(doc, parada, "nombre", nombreP);
+						CrearXML.agregarElemento(doc, parada, "region", regionP);
+
+						paradas.appendChild(parada);
+					}
+
+					// Generar el archivo XML
+
+					CrearXML.escribirArchivo(doc, "archivos/" + nombre + ".xml");
+
+				} catch (Exception e) {
+					System.out.println(e.getMessage());
+				}
+
+				aux = false;
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+				aux = true;
+			}
+		} while (aux == true);
+		this.menuPeregrino();
 	}
 
 }

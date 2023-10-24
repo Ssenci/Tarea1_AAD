@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<carnet>
+  <id>3</id>
+  <fechaexp>2023-10-24T18:18:19.500289900</fechaexp>
+  <expedidoen>paradaxxx</expedidoen>
+  <peregrino>
+    <nombre>Pepe</nombre>
+    <nacionalidad>Portugal</nacionalidad>
+  </peregrino>
+  <hoy>2023-10-24</hoy>
+  <distanciatotal>55</distanciatotal>
+  <paradas>
+    <parada>
+      <orden>5</orden>
+      <nombre>Gutierrez Herrero</nombre>
+      <region>A</region>
+    </parada>
+  </paradas>
+</carnet>

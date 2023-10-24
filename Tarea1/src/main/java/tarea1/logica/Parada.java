@@ -43,6 +43,11 @@ public class Parada {
 		super();
 		this.id = id;
 	}
+	
+	public Parada(String nombre) {
+		super();
+		this.nombre = nombre;
+	}
 
 	public Parada(long id, String nombre, String region) {
 		super();
